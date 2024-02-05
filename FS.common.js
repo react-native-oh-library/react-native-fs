@@ -4,10 +4,11 @@
  */
 
 'use strict';
+import { TurboModuleRegistry } from "react-native";
 
 // This file supports both iOS and Android
 
-var RNFSManager = require('react-native').NativeModules.RNFSManager;
+var RNFSManager = TurboModuleRegistry?TurboModuleRegistry.get('ReactNativeFs'):NativeModules.RNFSManager;
 
 var NativeEventEmitter = require('react-native').NativeEventEmitter;
 
@@ -638,7 +639,7 @@ var RNFS = {
   MainBundlePath: RNFSManager.RNFSMainBundlePath,
   CachesDirectoryPath: RNFSManager.RNFSCachesDirectoryPath,
   ExternalCachesDirectoryPath: RNFSManager.RNFSExternalCachesDirectoryPath,
-  DocumentDirectoryPath: RNFSManager.RNFSDocumentDirectoryPath,
+  DocumentDirectoryPath: (isIOS || isWindows )? RNFSManager.RNFSDocumentDirectoryPath:RNFSManager.getConstants().FileSandBoxPath,
   DownloadDirectoryPath: RNFSManager.RNFSDownloadDirectoryPath,
   ExternalDirectoryPath: RNFSManager.RNFSExternalDirectoryPath,
   ExternalStorageDirectoryPath: RNFSManager.RNFSExternalStorageDirectoryPath,
@@ -647,6 +648,7 @@ var RNFS = {
   PicturesDirectoryPath: RNFSManager.RNFSPicturesDirectoryPath, // For Windows
   FileProtectionKeys: RNFSManager.RNFSFileProtectionKeys,
   RoamingDirectoryPath: RNFSManager.RNFSRoamingDirectoryPath, // For Windows
+  //FileSandBoxPath: RNFSManager.getConstants().FileSandBoxPath, // For harmony
 };
 
 module.exports = RNFS;

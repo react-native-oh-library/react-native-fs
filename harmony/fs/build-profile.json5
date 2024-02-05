@@ -1,0 +1,12 @@
+{
+  "apiType": "stageMode",
+
+  "targets": [
+    {
+      "name": "default"
+    },
+    {
+      "name": "ohosTest",
+    }
+  ]
+}

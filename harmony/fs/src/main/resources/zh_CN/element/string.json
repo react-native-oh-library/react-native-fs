@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "模块描述"
+    },
+    {
+      "name": "FsAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "FsAbility_label",
+      "value": "label"
+    }
+  ]
+}
