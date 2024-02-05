@@ -648,7 +648,6 @@ var RNFS = {
   PicturesDirectoryPath: RNFSManager.RNFSPicturesDirectoryPath, // For Windows
   FileProtectionKeys: RNFSManager.RNFSFileProtectionKeys,
   RoamingDirectoryPath: RNFSManager.RNFSRoamingDirectoryPath, // For Windows
-  //FileSandBoxPath: RNFSManager.getConstants().FileSandBoxPath, // For harmony
 };
 
 module.exports = RNFS;
