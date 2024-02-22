@@ -637,7 +637,7 @@ var RNFS = {
   },
 
   MainBundlePath: RNFSManager.RNFSMainBundlePath,
-  CachesDirectoryPath: RNFSManager.RNFSCachesDirectoryPath,
+  CachesDirectoryPath: (isIOS || isWindows )? RNFSManager.RNFSCachesDirectoryPath:RNFSManager.getConstants().FileCachePath,
   ExternalCachesDirectoryPath: RNFSManager.RNFSExternalCachesDirectoryPath,
   DocumentDirectoryPath: (isIOS || isWindows )? RNFSManager.RNFSDocumentDirectoryPath:RNFSManager.getConstants().FileSandBoxPath,
   DownloadDirectoryPath: RNFSManager.RNFSDownloadDirectoryPath,
