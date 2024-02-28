@@ -19,8 +19,8 @@ var utf8 = require('utf8');
 var isIOS = require('react-native').Platform.OS === 'ios';
 var isWindows = require('react-native').Platform.OS === 'windows'; // To accommodate Windows
 
-var RNFSFileTypeRegular = RNFSManager.RNFSFileTypeRegular;
-var RNFSFileTypeDirectory = RNFSManager.RNFSFileTypeDirectory;
+var RNFSFileTypeRegular = (isIOS || isWindows )? RNFSManager.RNFSFileTypeRegular:RNFSManager.getConstants().RNFSFileTypeRegular;
+var RNFSFileTypeDirectory = (isIOS || isWindows )?RNFSManager.RNFSFileTypeDirectory:RNFSManager.getConstants().RNFSFileTypeDirectory;
 
 var jobId = 0;
 

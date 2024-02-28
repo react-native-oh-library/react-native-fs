@@ -79,9 +79,39 @@ static jsi::Value __hostFunction_FsTurboModule_readFileAssets(jsi::Runtime &rt,
     return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "readFileAssets", args, count);
 }
 
-static jsi::Value __hostFunction_NativeFsSpecJSI_unlink(jsi::Runtime &rt, react::TurboModule &turboModule,
+static jsi::Value __hostFunction_FsTurboModule_unlink(jsi::Runtime &rt, react::TurboModule &turboModule,
                                                         const jsi::Value *args, size_t count) {
     return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "unlink", args, count);
+}
+
+static jsi::Value __hostFunction_FsTurboModule_hash(jsi::Runtime &rt, react::TurboModule &turboModule,
+                                                      const jsi::Value *args, size_t count) {
+    return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "hash", args, count);
+}
+
+static jsi::Value __hostFunction_FsTurboModule_moveFile(jsi::Runtime &rt, react::TurboModule &turboModule,
+                                                    const jsi::Value *args, size_t count) {
+    return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "moveFile", args, count);
+}
+
+static jsi::Value __hostFunction_FsTurboModule_read(jsi::Runtime &rt, react::TurboModule &turboModule,
+                                                        const jsi::Value *args, size_t count) {
+    return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "read", args, count);
+}
+
+static jsi::Value __hostFunction_FsTurboModule_write(jsi::Runtime &rt, react::TurboModule &turboModule,
+                                                        const jsi::Value *args, size_t count) {
+    return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "write", args, count);
+}
+
+static jsi::Value __hostFunction_FsTurboModule_touch(jsi::Runtime &rt, react::TurboModule &turboModule,
+                                                    const jsi::Value *args, size_t count) {
+    return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "touch", args, count);
+}
+
+static jsi::Value __hostFunction_FsTurboModule_stat(jsi::Runtime &rt, react::TurboModule &turboModule,
+                                                        const jsi::Value *args, size_t count) {
+    return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "stat", args, count);
 }
 
 FsTurboModule::FsTurboModule(const ArkTSTurboModule::Context ctx, const std::string name)
@@ -94,5 +124,11 @@ FsTurboModule::FsTurboModule(const ArkTSTurboModule::Context ctx, const std::str
     methodMap_["writeFile"] = MethodMetadata{2, __hostFunction_FsTurboModule_writeFile};
     methodMap_["readFileAssets"] = MethodMetadata{1, __hostFunction_FsTurboModule_readFileAssets};
     methodMap_["copyFile"] = MethodMetadata{2, __hostFunction_FsTurboModule_copyFile};
-    methodMap_["unlink"] = MethodMetadata{1, __hostFunction_NativeFsSpecJSI_unlink};
+    methodMap_["unlink"] = MethodMetadata{1, __hostFunction_FsTurboModule_unlink};
+    methodMap_["hash"] = MethodMetadata{2, __hostFunction_FsTurboModule_hash};
+    methodMap_["moveFile"] = MethodMetadata{2, __hostFunction_FsTurboModule_moveFile};
+    methodMap_["read"] = MethodMetadata{3, __hostFunction_FsTurboModule_read};
+    methodMap_["write"] = MethodMetadata{3, __hostFunction_FsTurboModule_write};
+    methodMap_["touch"] = MethodMetadata{3, __hostFunction_FsTurboModule_touch};
+    methodMap_["stat"] = MethodMetadata{1, __hostFunction_FsTurboModule_stat};
 }

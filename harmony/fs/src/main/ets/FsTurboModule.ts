@@ -23,22 +23,37 @@
  */
 
 import { TurboModule, RNOHError } from 'rnoh/ts';
-import fs from '@ohos.file.fs';
+import fs, { ReadTextOptions, WriteOptions } from '@ohos.file.fs';
+import hash from '@ohos.file.hash';
 import { BusinessError } from '@ohos.base';
 import common from '@ohos.app.ability.common';
 import util from '@ohos.util';
 import buffer from '@ohos.buffer';
+import HashMap from '@ohos.util.HashMap';
 
 let context = getContext(this) as common.ApplicationContext; // ApplicationContext
 
+interface StatResult {
+  ctime: number, // The creation date of the file
+  mtime: number, // The last modified date of the file
+  size: number, // Size in bytes
+  mode: number, // UNIX file mode
+  originalFilepath: string, // ANDROID: In case of content uri this is the pointed file path, otherwise is the same as path
+  type: number // Is the file just a file? Is the file a directory?
+}
+
 export class FsTurboModule extends TurboModule {
-  // 常量路径
+  // 常量
   getConstants(): object {
     return {
       // 沙箱路径
       FileSandBoxPath: context.filesDir,
       // 缓存路径
       FileCachePath: context.cacheDir,
+      // 文件
+      RNFSFileTypeRegular: 0,
+      // 文件夹
+      RNFSFileTypeDirectory: 1,
     }
   };
 
@@ -171,6 +186,152 @@ export class FsTurboModule extends TurboModule {
           reject('FilePath does not exist');
         } else {
           resolve();
+        }
+      });
+    })
+  }
+
+  // 文件hash
+  hash(path: string, algorithm: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      let algorithms: HashMap<string, string> = new HashMap();
+      algorithms.set('md5', 'md5');
+      algorithms.set('sha1', 'sha1');
+      algorithms.set('sha256', 'sha256');
+      // algorithm不存在
+      if (!algorithms.hasKey(algorithm)) {
+        reject('Invalid hash algorithm');
+        return;
+      }
+      // 判断是否是文件夹
+      let isDirectory = fs.statSync(path).isDirectory();
+      if (isDirectory) {
+        reject('file  IsDirectory');
+        return;
+      }
+      // 判断文件是否在
+      let res = fs.accessSync(path);
+      if (!res) {
+        reject('file not exists');
+        return;
+      }
+      hash.hash(path, algorithm, (err: BusinessError, result: string) => {
+        if (err) {
+          reject("calculate file hash failed with error message: " + err.message + ", error code: " + err.code);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  // 移动文件
+  moveFile(filepath: string, destPath: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      fs.moveFile(filepath, destPath, 0, (err: BusinessError) => {
+        if (err) {
+          reject('move file failed with error message: ' + err.message + ', error code: ' + err.code);
+        } else {
+          resolve();
+        }
+      })
+    })
+  }
+
+  // 文件内容部分读
+  read(path: string, length: number, position: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      let readTextOption: ReadTextOptions = {
+        offset: position,
+        length: length,
+        encoding: 'utf-8'
+      };
+      fs.readText(path, readTextOption, (err: BusinessError, str: string) => {
+        if (err) {
+          reject('readText failed with error message: ' + err.message + ', error code: ' + err.code);
+        } else {
+          let result = buffer.from(str, 'utf8').toString('base64');
+          resolve(result);
+        }
+      });
+    })
+  }
+
+  // 文件内容从某位置写
+  write(filepath: string, contents: string, position: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let result = buffer.from(contents, 'base64').toString('utf8');
+      let file = fs.openSync(filepath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
+      let writeOption: WriteOptions = {
+        offset: position
+      };
+      fs.write(file.fd, result, writeOption, (err: BusinessError, writeLen: number) => {
+        if (err) {
+          reject('write data to file failed with error message:' + err.message + ', error code: ' + err.code);
+        } else {
+          resolve();
+        }
+        fs.closeSync(file);
+      });
+    })
+  }
+
+  touch(filePath: string, mtime?: number, ctime?: number): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      // 判断是否是文件夹
+      let isDirectory = fs.statSync(filePath).isDirectory();
+      if (isDirectory) {
+        reject('file IsDirectory');
+        return;
+      }
+      // 判断文件是否在
+      let res = fs.accessSync(filePath);
+      if (!res) {
+        reject('No such file or directory');
+        return;
+      }
+      if (mtime) {
+        try {
+          fs.utimes(filePath, mtime);
+          resolve(true)
+        } catch (err) {
+          resolve(err.message)
+        }
+      } else {
+        resolve(false)
+      }
+    })
+  }
+
+  // 获取文件详细属性信息
+  stat(filepath: string): Promise<StatResult> {
+    return new Promise((resolve, reject) => {
+      let statResult: StatResult = {
+        ctime: -1,
+        mtime: -1,
+        size: -1,
+        mode: -1,
+        originalFilepath: '',
+        type: -1
+      };
+      // 判断文件是否在
+      let res = fs.accessSync(filepath);
+      if (!res) {
+        reject('file not exists');
+        return;
+      }
+      fs.stat(filepath, (err: BusinessError, stat: fs.Stat) => {
+        if (err) {
+          console.error("error message: " + err.message + ", error code: " + err.code);
+        } else {
+          statResult.ctime = stat.ctime;
+          statResult.mtime = stat.mtime;
+          statResult.size = stat.size;
+          statResult.mode = stat.mode;
+          statResult.originalFilepath = filepath;
+          statResult.type = stat.isDirectory() ? 1 : 0;
+          console.log('file statResult: ' + JSON.stringify(statResult));
+          resolve(statResult);
         }
       });
     })
