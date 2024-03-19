@@ -1,6 +1,6 @@
 {
-  "name": "fs",
-  "version": "1.0.0",
+  "name": "rnoh-fs",
+  "version": "2.20.0-0.1.0",
   "description": "Please describe the basic information.",
   "main": "index.ets",
   "types": "module",

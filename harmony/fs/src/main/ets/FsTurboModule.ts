@@ -109,7 +109,7 @@ export class FsTurboModule extends TurboModule {
       // base64 decode 解码
       let result = buffer.from(contentStr, 'base64').toString('utf8');
       // 读写创建 文件不存在则创建文件
-      let file = fs.openSync(path, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
+      let file = fs.openSync(path, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
       fs.write(file.fd, result, (err: BusinessError, writeLen: number) => {
         if (err) {
           reject('Directory could not be created');
