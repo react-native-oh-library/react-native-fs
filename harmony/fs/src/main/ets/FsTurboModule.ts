@@ -30,8 +30,11 @@ import common from '@ohos.app.ability.common';
 import util from '@ohos.util';
 import buffer from '@ohos.buffer';
 import HashMap from '@ohos.util.HashMap';
+import Logger from './Logger';
 
 let context = getContext(this) as common.ApplicationContext; // ApplicationContext
+
+const TAG: string = "[RNOH] Fs"
 
 interface StatResult {
   ctime: number, // The creation date of the file
@@ -322,7 +325,7 @@ export class FsTurboModule extends TurboModule {
       }
       fs.stat(filepath, (err: BusinessError, stat: fs.Stat) => {
         if (err) {
-          console.error("error message: " + err.message + ", error code: " + err.code);
+          Logger.error(TAG, `error message: ` + err.message + ', error code: ' + err.code);
         } else {
           statResult.ctime = stat.ctime;
           statResult.mtime = stat.mtime;
@@ -330,7 +333,7 @@ export class FsTurboModule extends TurboModule {
           statResult.mode = stat.mode;
           statResult.originalFilepath = filepath;
           statResult.type = stat.isDirectory() ? 1 : 0;
-          console.log('file statResult: ' + JSON.stringify(statResult));
+          Logger.info(TAG, 'file statResult: ' + JSON.stringify(statResult));
           resolve(statResult);
         }
       });
