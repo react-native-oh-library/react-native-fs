@@ -32,8 +32,6 @@ import buffer from '@ohos.buffer';
 import HashMap from '@ohos.util.HashMap';
 import Logger from './Logger';
 
-let context = getContext(this) as common.ApplicationContext; // ApplicationContext
-
 const TAG: string = "[RNOH] Fs"
 
 interface StatResult {
@@ -46,13 +44,15 @@ interface StatResult {
 }
 
 export class FsTurboModule extends TurboModule {
+
+  context = getContext(this) as common.ApplicationContext; // ApplicationContext
   // 常量
   getConstants(): object {
     return {
       // 沙箱路径
-      FileSandBoxPath: context.filesDir,
+      FileSandBoxPath: this.context.filesDir,
       // 缓存路径
-      FileCachePath: context.cacheDir,
+      FileCachePath: this.context.cacheDir,
       // 文件
       RNFSFileTypeRegular: 0,
       // 文件夹
@@ -145,7 +145,7 @@ export class FsTurboModule extends TurboModule {
   // 资源文件内容读取
   readFileAssets(path: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      context.resourceManager.getRawFileContent(
+      this.context.resourceManager.getRawFileContent(
         path, (err: BusinessError, value) => {
         if (err) {
           reject(err.message);
