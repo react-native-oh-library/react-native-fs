@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { TurboModule, RNOHError } from 'rnoh/ts';
+import { TurboModule, RNOHError } from '@rnoh/react-native-openharmony/ts';
 import fs, { ReadTextOptions, WriteOptions } from '@ohos.file.fs';
 import hash from '@ohos.file.hash';
 import { BusinessError } from '@ohos.base';

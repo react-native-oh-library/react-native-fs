@@ -1,10 +1,10 @@
 {
-  "name": "rnoh-fs",
-  "version": "2.20.0-0.1.0",
+  "name": "@react-native-oh-tpl/react-native-fs",
+  "version": "2.20.0-0.1.2",
   "description": "Please describe the basic information.",
   "main": "index.ets",
   "types": "module",
   "dependencies": {
-    "rnoh": "file:../rnoh"
+    "@rnoh/react-native-openharmony": "file:../react_native_openharmony"
   }
 }
