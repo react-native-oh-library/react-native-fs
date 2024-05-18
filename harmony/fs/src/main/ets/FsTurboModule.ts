@@ -222,7 +222,7 @@ export class FsTurboModule extends TurboModule {
         if (err) {
           reject("calculate file hash failed with error message: " + err.message + ", error code: " + err.code);
         } else {
-          resolve(result);
+          resolve(result.toLocaleUpperCase());
         }
       })
     })
