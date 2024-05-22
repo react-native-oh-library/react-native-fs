@@ -22,15 +22,19 @@
  * SOFTWARE.
  */
 
-import { TurboModule, RNOHError } from '@rnoh/react-native-openharmony/ts';
-import fs, { ReadTextOptions, WriteOptions } from '@ohos.file.fs';
+import { TurboModule, RNOHError, TurboModuleContext } from '@rnoh/react-native-openharmony/ts';
+import { TM } from "@rnoh/react-native-openharmony/generated/ts"
+import fs, { ListFileOptions, ReadOptions, ReadTextOptions, WriteOptions } from '@ohos.file.fs';
 import hash from '@ohos.file.hash';
 import { BusinessError } from '@ohos.base';
-import common from '@ohos.app.ability.common';
+import resourceManager from '@ohos.resourceManager'
 import util from '@ohos.util';
+import loadRequest from '@ohos.request';
 import buffer from '@ohos.buffer';
 import HashMap from '@ohos.util.HashMap';
 import Logger from './Logger';
+import { Context } from '@ohos.abilityAccessCtrl';
+import common from '@ohos.app.ability.common';
 
 const TAG: string = "[RNOH] Fs"
 
@@ -43,11 +47,177 @@ interface StatResult {
   type: number // Is the file just a file? Is the file a directory?
 }
 
-export class FsTurboModule extends TurboModule {
+type Headers = { [name: string]: string }
+type Fields = { [name: string]: string }
 
-  context = getContext(this) as common.ApplicationContext; // ApplicationContext
+type DownloadFileOptions = {
+  jobId: number
+  fromUrl: string // URL to download file from
+  toFile: string // Local filesystem path to save the file to
+  headers?: Headers // An object of headers to be passed to the server
+  background?: boolean // Continue the download in the background after the app terminates (iOS only)
+  progressInterval?: number
+  progressDivider?: number
+  readTimeout?: number
+  hasBeginCallback?: (res: DownloadBeginCallbackResult) => void
+  hasProgressCallback?: (res: DownloadProgressCallbackResult) => void
+  hasResumableCallback?: () => void // only supported on iOS yet
+  connectionTimeout?: number // only supported on Android yet
+  backgroundTimeout?: number // Maximum time (in milliseconds) to download an entire resource (iOS only, useful for timing out background downloads)
+}
+
+type DownloadBeginCallbackResult = {
+  jobId: number // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
+  statusCode: number // The HTTP status code
+  contentLength: number // The total size in bytes of the download resource
+  headers: Headers // The HTTP response headers from the server
+}
+
+type DownloadProgressCallbackResult = {
+  jobId: number // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
+  contentLength: number // The total size in bytes of the download resource
+  bytesWritten: number // The number of bytes written to the file so far
+}
+
+type DownloadResult = {
+  jobId: number // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
+  statusCode: number // The HTTP status code
+  bytesWritten: number // The number of bytes written to the file
+}
+
+type ReadDirItem = {
+  ctime?: number;
+  mtime?: number;
+  name: string;
+  path: string;
+  size: number;
+  type: number;
+};
+
+export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec {
+  private context: Context; // ApplicationContext
+  private resourceManager: resourceManager.ResourceManager;
+
+  constructor(ctx: TurboModuleContext) {
+    super(ctx)
+    this.context = this.ctx.uiAbilityContext;
+    this.resourceManager = this.context.resourceManager;
+  }
+
+  existsAssets(filepath: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.resourceManager.getRawFileList(filepath, (error: BusinessError, value: Array<string>) => {
+          if (error != null) {
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        });
+      } catch (error) {
+        resolve(false);
+      }
+    });
+  }
+
+  readDir(dirpath: string): Promise<Object[]> {
+    return new Promise((resolve, reject) => {
+      let listFileOption: ListFileOptions = {
+        recursion: false,
+        listNum: 0
+      };
+      fs.listFile(dirpath, listFileOption, (err: BusinessError, filenames: Array<string>) => {
+        if (err) {
+          reject("list file failed with error message: " + err.message + ", error code: " + err.code);
+        } else {
+          let readDirResult: ReadDirItem[] = [];
+          for (let i = 0; i < filenames.length; i++) {
+            let filename = filenames[i];
+            let filePath = dirpath + filename;
+            let file = fs.statSync(filePath);
+            readDirResult.push({
+              ctime: file.ctime,
+              mtime: file.mtime,
+              name: filename,
+              path: filePath,
+              size: file.size,
+              type: file.isDirectory() ? 1 : 0,
+            });
+          }
+          resolve(readDirResult);
+        }
+      });
+    });
+  }
+
+  downloadFile(options: Object): Promise<DownloadResult> {
+    return new Promise((resolve, reject) => {
+      let downloadFileOptions: DownloadFileOptions = options as DownloadFileOptions;
+      let downloadConfig: loadRequest.DownloadConfig = {
+        url: downloadFileOptions.fromUrl,
+        header: downloadFileOptions.headers,
+        enableMetered: true,
+        enableRoaming: true,
+        description: "",
+        filePath: downloadFileOptions.toFile,
+        title: '',
+        background: true
+      };
+
+      loadRequest.downloadFile((this.context as common.BaseContext), downloadConfig)
+        .then((downloadTask: loadRequest.DownloadTask) => {
+          if (downloadTask) {
+            let loadTask: loadRequest.DownloadTask | null = downloadTask;
+
+            if (downloadFileOptions.hasBeginCallback) {
+              let downloadBeginCallbackResult: DownloadBeginCallbackResult = {
+                jobId: downloadFileOptions.jobId,
+                statusCode: 0,
+                contentLength: 0,
+                headers: downloadFileOptions.headers
+              }
+              this.ctx.rnInstance.emitDeviceEvent('DownloadBegin', downloadBeginCallbackResult)
+            }
+            if (downloadFileOptions.hasProgressCallback) {
+              loadTask.on('progress', (receivedSize, totalSize) => {
+                if (totalSize > 0) {
+                  let downloadProgressCallbackResult: DownloadProgressCallbackResult = {
+                    jobId: downloadFileOptions.jobId,
+                    contentLength: totalSize,
+                    bytesWritten: receivedSize
+                  }
+                  this.ctx.rnInstance.emitDeviceEvent('DownloadProgress', downloadProgressCallbackResult)
+                }
+              });
+            }
+
+            loadTask.on('complete', () => {
+              let downloadResult: DownloadResult = {
+                jobId: downloadFileOptions.jobId,
+                statusCode: 200,
+                bytesWritten: 0
+              }
+              resolve(downloadResult);
+            })
+            loadTask.on('pause', () => {
+            })
+
+            loadTask.on('remove', () => {
+            })
+            loadTask.on('fail', (err) => {
+              reject(JSON.stringify(err));
+            })
+          } else {
+            reject("downloadTask dismiss");
+          }
+        }).catch((err: BusinessError) => {
+        reject(JSON.stringify(err));
+      })
+    });
+  }
+
   // 常量
-  getConstants(): object {
+  getConstants(): Object {
     return {
       // 沙箱路径
       FileSandBoxPath: this.context.filesDir,
@@ -63,14 +233,18 @@ export class FsTurboModule extends TurboModule {
   // 读取文件内容
   readFile(path: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      fs.readText(path, (err: BusinessError, content: string) => {
+      let file = fs.openSync(path, fs.OpenMode.READ_WRITE);
+      let arrayBuffer = new ArrayBuffer(4096);
+      fs.read(file.fd, arrayBuffer, (err: BusinessError, readLen: number) => {
         if (err) {
-          reject('Failed to read the file');
+          reject("read failed with error message: " + err.message + ", error code: " + err.code);
         } else {
-          let result = buffer.from(content, 'utf8').toString('base64');
+          let result = buffer.from(arrayBuffer, 0, readLen).toString('base64');
           resolve(result);
         }
+        fs.closeSync(file);
       });
+
     })
   };
 
@@ -145,8 +319,7 @@ export class FsTurboModule extends TurboModule {
   // 资源文件内容读取
   readFileAssets(path: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.context.resourceManager.getRawFileContent(
-        path, (err: BusinessError, value) => {
+      this.resourceManager.getRawFileContent(path, (err: BusinessError, value: Uint8Array) => {
         if (err) {
           reject(err.message);
         } else {
