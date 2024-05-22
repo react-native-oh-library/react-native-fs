@@ -271,7 +271,7 @@ var RNFS = {
   },
 
   // Android-only
-  existsAssets(filepath: string) {
+  existsAssets(filepath: string):Promise<boolean>  {
     if (!RNFSManager.existsAssets) {
       throw new Error('existsAssets is not available on this platform');
     }

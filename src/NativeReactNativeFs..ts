@@ -16,17 +16,15 @@ type StatResult = {
   type: number       // Is the file just a file? // Is the file a directory?  
 };
 
+type DownloadResult = {
+  jobId: number;          // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
+  statusCode: number;     // The HTTP status code
+  bytesWritten: number;   // The number of bytes written to the file
+};
+
 export interface Spec extends TurboModule {
-  getConstants: () => {
-    // System paths. 沙箱路径
-    FileSandBoxPath: string;
-    // 缓存路径
-    FileCachePath: string;
-    // 文件
-    RNFSFileTypeRegular:number;
-    // 文件夹
-    RNFSFileTypeDirectory:number;
-  };
+  getConstants(): Object;
+
   readFile(path: string): Promise<string>;
 
   exists(path: string): Promise<boolean>;
@@ -54,6 +52,13 @@ export interface Spec extends TurboModule {
   stat(filepath: string): Promise<StatResult>;
 
   touch(filepath: string, mtime?: number, ctime?: number): Promise<boolean>;
+
+  downloadFile(bridgeOptions: Object): Promise<DownloadResult>;
+
+  readDir(dirpath: string): Promise<Object[]>;
+
+  existsAssets(filepath: string):Promise<boolean>;
+
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('ReactNativeFs');

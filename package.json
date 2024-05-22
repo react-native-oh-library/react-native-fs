@@ -1,6 +1,6 @@
 {
   "name": "@react-native-oh-tpl/react-native-fs",
-  "version": "2.20.0-0.1.3",
+  "version": "2.20.0-0.1.4",
   "description": "Native filesystem access for react-native",
   "main": "FS.common.js",
   "typings": "index.d.ts",
@@ -9,7 +9,12 @@
     "flow": "flow; test $? -eq 0 -o $? -eq 2"
   },
   "harmony": {
-    "alias": "react-native-fs"
+    "alias": "react-native-fs",
+    "codegenConfig": {
+      "specPaths": [
+        "./src"
+      ]
+    }
   },
   "repository": {
     "type": "git",
