@@ -233,7 +233,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
   // 读取文件内容
   readFile(path: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      let file = fs.openSync(path, fs.OpenMode.READ_WRITE);
+      let file = fs.openSync(path);
       let arrayBuffer = new ArrayBuffer(4096);
       fs.read(file.fd, arrayBuffer, (err: BusinessError, readLen: number) => {
         if (err) {
