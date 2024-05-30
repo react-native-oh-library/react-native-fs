@@ -126,6 +126,9 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
         recursion: false,
         listNum: 0
       };
+      if (!dirpath.endsWith('/')) {
+        dirpath += '/';
+      }
       fs.listFile(dirpath, listFileOption, (err: BusinessError, filenames: Array<string>) => {
         if (err) {
           reject("list file failed with error message: " + err.message + ", error code: " + err.code);
@@ -233,18 +236,28 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
   // 读取文件内容
   readFile(path: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      let file = fs.openSync(path);
-      let arrayBuffer = new ArrayBuffer(4096);
-      fs.read(file.fd, arrayBuffer, (err: BusinessError, readLen: number) => {
-        if (err) {
-          reject("read failed with error message: " + err.message + ", error code: " + err.code);
-        } else {
-          let result = buffer.from(arrayBuffer, 0, readLen).toString('base64');
-          resolve(result);
+      try {
+        let file = fs.openSync(path);
+        let bufSize = 4096;
+        let readSize = 0;
+        let buf = new ArrayBuffer(bufSize);
+        let result = "";
+        let readOptions: ReadOptions = {
+          offset: readSize,
+          length: bufSize
+        };
+        let readLen = fs.readSync(file.fd, buf, readOptions);
+        while (readLen > 0) {
+          readSize += readLen;
+          readOptions.offset = readSize;
+          result += buffer.from(buf, 0, readLen).toString('base64');
+          readLen = fs.readSync(file.fd, buf, readOptions);
         }
         fs.closeSync(file);
-      });
-
+        resolve(result);
+      } catch (e) {
+        reject(JSON.stringify(e));
+      }
     })
   };
 
