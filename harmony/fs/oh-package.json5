@@ -1,6 +1,6 @@
 {
   "name": "@react-native-oh-tpl/react-native-fs",
-  "version": "2.20.0-0.1.6",
+  "version": "2.20.0-0.1.7",
   "description": "Please describe the basic information.",
   "main": "index.ets",
   "types": "module",

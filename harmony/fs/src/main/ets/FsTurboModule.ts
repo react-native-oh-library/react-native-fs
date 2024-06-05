@@ -133,21 +133,25 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
         if (err) {
           reject("list file failed with error message: " + err.message + ", error code: " + err.code);
         } else {
-          let readDirResult: ReadDirItem[] = [];
-          for (let i = 0; i < filenames.length; i++) {
-            let filename = filenames[i];
-            let filePath = dirpath + filename;
-            let file = fs.statSync(filePath);
-            readDirResult.push({
-              ctime: file.ctime,
-              mtime: file.mtime,
-              name: filename,
-              path: filePath,
-              size: file.size,
-              type: file.isDirectory() ? 1 : 0,
-            });
+          try {
+            let readDirResult: ReadDirItem[] = [];
+            for (let i = 0; i < filenames.length; i++) {
+              let filename = filenames[i];
+              let filePath = dirpath + filename;
+              let file = fs.statSync(filePath);
+              readDirResult.push({
+                ctime: file.ctime,
+                mtime: file.mtime,
+                name: filename,
+                path: filePath,
+                size: file.size,
+                type: file.isDirectory() ? 1 : 0,
+              });
+            }
+            resolve(readDirResult);
+          } catch (e) {
+            reject(e)
           }
-          resolve(readDirResult);
         }
       });
     });
@@ -156,6 +160,15 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
   downloadFile(options: Object): Promise<DownloadResult> {
     return new Promise((resolve, reject) => {
       let downloadFileOptions: DownloadFileOptions = options as DownloadFileOptions;
+
+      try {
+        let res = fs.accessSync(downloadFileOptions.toFile);
+        if (res) {
+          fs.unlinkSync(downloadFileOptions.toFile);
+        }
+      } catch (error) {
+        reject(error);
+      }
       let downloadConfig: loadRequest.DownloadConfig = {
         url: downloadFileOptions.fromUrl,
         header: downloadFileOptions.headers,
@@ -208,13 +221,13 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
             loadTask.on('remove', () => {
             })
             loadTask.on('fail', (err) => {
-              reject(JSON.stringify(err));
+              reject(err);
             })
           } else {
             reject("downloadTask dismiss");
           }
         }).catch((err: BusinessError) => {
-        reject(JSON.stringify(err));
+        reject(err);
       })
     });
   }
@@ -241,22 +254,25 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
         let bufSize = 4096;
         let readSize = 0;
         let buf = new ArrayBuffer(bufSize);
-        let result = "";
         let readOptions: ReadOptions = {
           offset: readSize,
           length: bufSize
         };
+        let buffers: buffer.Buffer[] = [];
         let readLen = fs.readSync(file.fd, buf, readOptions);
         while (readLen > 0) {
           readSize += readLen;
           readOptions.offset = readSize;
-          result += buffer.from(buf, 0, readLen).toString('base64');
+          buffers.push(buffer.from(buf.slice(0, readLen)))
           readLen = fs.readSync(file.fd, buf, readOptions);
         }
         fs.closeSync(file);
+        let finalBuf: ArrayBuffer = buffer.concat(buffers).buffer;
+        let base64Helper = new util.Base64Helper;
+        let result = base64Helper.encodeToStringSync(new Uint8Array(finalBuf));
         resolve(result);
       } catch (e) {
-        reject(JSON.stringify(e));
+        reject(e);
       }
     })
   };
