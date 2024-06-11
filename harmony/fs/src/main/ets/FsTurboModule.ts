@@ -177,7 +177,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
         description: "",
         filePath: downloadFileOptions.toFile,
         title: '',
-        background: true
+        background: false
       };
 
       loadRequest.downloadFile((this.context as common.BaseContext), downloadConfig)
