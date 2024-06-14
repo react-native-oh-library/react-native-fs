@@ -234,16 +234,22 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
 
   // 常量
   getConstants(): Object {
-    return {
+    let applicationContext = this.context.getApplicationContext();
+    let result = {
       // 沙箱路径
       FileSandBoxPath: this.context.filesDir,
       // 缓存路径
       FileCachePath: this.context.cacheDir,
+      MainBundlePath: applicationContext.bundleCodeDir,
+      TemporaryDirectoryPath: applicationContext.tempDir,
+      LibraryDirectoryPath: applicationContext.preferencesDir,
       // 文件
       RNFSFileTypeRegular: 0,
       // 文件夹
       RNFSFileTypeDirectory: 1,
     }
+
+    return result;
   };
 
   // 读取文件内容
