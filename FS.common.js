@@ -636,15 +636,15 @@ var RNFS = {
     return RNFSManager.scanFile(path);
   },
 
-  MainBundlePath: RNFSManager.RNFSMainBundlePath,
+  MainBundlePath: (isIOS || isWindows )? RNFSManager.RNFSMainBundlePath:RNFSManager.getConstants().MainBundlePath, 
   CachesDirectoryPath: (isIOS || isWindows )? RNFSManager.RNFSCachesDirectoryPath:RNFSManager.getConstants().FileCachePath,
   ExternalCachesDirectoryPath: RNFSManager.RNFSExternalCachesDirectoryPath,
   DocumentDirectoryPath: (isIOS || isWindows )? RNFSManager.RNFSDocumentDirectoryPath:RNFSManager.getConstants().FileSandBoxPath,
   DownloadDirectoryPath: RNFSManager.RNFSDownloadDirectoryPath,
   ExternalDirectoryPath: RNFSManager.RNFSExternalDirectoryPath,
   ExternalStorageDirectoryPath: RNFSManager.RNFSExternalStorageDirectoryPath,
-  TemporaryDirectoryPath: RNFSManager.RNFSTemporaryDirectoryPath,
-  LibraryDirectoryPath: RNFSManager.RNFSLibraryDirectoryPath,
+  TemporaryDirectoryPath:  (isIOS || isWindows )? RNFSManager.RNFSTemporaryDirectoryPath:RNFSManager.getConstants().TemporaryDirectoryPath,
+  LibraryDirectoryPath:  (isIOS || isWindows )? RNFSManager.RNFSLibraryDirectoryPath:RNFSManager.getConstants().LibraryDirectoryPath,
   PicturesDirectoryPath: RNFSManager.RNFSPicturesDirectoryPath, // For Windows
   FileProtectionKeys: RNFSManager.RNFSFileProtectionKeys,
   RoamingDirectoryPath: RNFSManager.RNFSRoamingDirectoryPath, // For Windows
