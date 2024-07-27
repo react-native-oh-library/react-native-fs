@@ -23,7 +23,7 @@
  */
 
 import { TurboModule, RNOHError, TurboModuleContext } from '@rnoh/react-native-openharmony/ts';
-import { TM } from "@rnoh/react-native-openharmony/generated/ts"
+import { TM } from "./namespace/ts";
 import fs, { ListFileOptions, ReadOptions, ReadTextOptions, WriteOptions } from '@ohos.file.fs';
 import hash from '@ohos.file.hash';
 import { BusinessError } from '@ohos.base';
