@@ -9,12 +9,7 @@
     "flow": "flow; test $? -eq 0 -o $? -eq 2"
   },
   "harmony": {
-    "alias": "react-native-fs",
-    "codegenConfig": {
-      "specPaths": [
-        "./src"
-      ]
-    }
+    "alias": "react-native-fs"
   },
   "repository": {
     "type": "git",
@@ -23,8 +18,6 @@
   "keywords": [
     "react-component",
     "react-native",
-    "ios",
-    "android",
     "fs",
     "filesystem",
     "download",
