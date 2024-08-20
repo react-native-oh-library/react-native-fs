@@ -94,9 +94,28 @@ type ReadDirItem = {
   type: number;
 };
 
+enum LOADTASK_STATUS {
+  PROGRESS = 'progress',
+  COMPLETE = 'complete',
+  PAUSE = 'pause',
+  REMOVE = 'remove',
+  FAIL = 'fail'
+}
+
 export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec {
   private context: Context; // ApplicationContext
   private resourceManager: resourceManager.ResourceManager;
+  private FOUR_ZERO_NINE_SIX: number = 4096
+  private ZERO: number = 0
+  private ONE: number = 1
+  private ONE_Three_Nine_ZERO_ZERO_ZERO_ONE_FIVE: number = 13900015
+  private UTF8: buffer.BufferEncoding = 'utf8'
+  private MD5: string = 'md5'
+  private SHA1: string = 'sha1'
+  private SHA256: string = 'sha256'
+  private UTF_8: buffer.BufferEncoding = 'utf-8'
+  private BASE64: buffer.BufferEncoding = 'base64'
+
 
   constructor(ctx: TurboModuleContext) {
     super(ctx)
@@ -124,7 +143,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
     return new Promise((resolve, reject) => {
       let listFileOption: ListFileOptions = {
         recursion: false,
-        listNum: 0
+        listNum: this.ZERO
       };
       if (!dirpath.endsWith('/')) {
         dirpath += '/';
@@ -135,7 +154,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
         } else {
           try {
             let readDirResult: ReadDirItem[] = [];
-            for (let i = 0; i < filenames.length; i++) {
+            for (let i = this.ZERO; i < filenames.length; i++) {
               let filename = filenames[i];
               let filePath = dirpath + filename;
               let file = fs.statSync(filePath);
@@ -145,7 +164,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
                 name: filename,
                 path: filePath,
                 size: file.size,
-                type: file.isDirectory() ? 1 : 0,
+                type: file.isDirectory() ? this.ONE : this.ZERO,
               });
             }
             resolve(readDirResult);
@@ -188,15 +207,15 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
             if (downloadFileOptions.hasBeginCallback) {
               let downloadBeginCallbackResult: DownloadBeginCallbackResult = {
                 jobId: downloadFileOptions.jobId,
-                statusCode: 0,
-                contentLength: 0,
+                statusCode: this.ZERO,
+                contentLength: this.ZERO,
                 headers: downloadFileOptions.headers
               }
               this.ctx.rnInstance.emitDeviceEvent('DownloadBegin', downloadBeginCallbackResult)
             }
             if (downloadFileOptions.hasProgressCallback) {
               loadTask.on('progress', (receivedSize, totalSize) => {
-                if (totalSize > 0) {
+                if (totalSize > this.ZERO) {
                   let downloadProgressCallbackResult: DownloadProgressCallbackResult = {
                     jobId: downloadFileOptions.jobId,
                     contentLength: totalSize,
@@ -211,7 +230,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
               let downloadResult: DownloadResult = {
                 jobId: downloadFileOptions.jobId,
                 statusCode: 200,
-                bytesWritten: 0
+                bytesWritten: this.ZERO
               }
               resolve(downloadResult);
             })
@@ -244,9 +263,9 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
       TemporaryDirectoryPath: applicationContext.tempDir,
       LibraryDirectoryPath: applicationContext.preferencesDir,
       // 文件
-      RNFSFileTypeRegular: 0,
+      RNFSFileTypeRegular: this.ZERO,
       // 文件夹
-      RNFSFileTypeDirectory: 1,
+      RNFSFileTypeDirectory: this.ONE,
     }
 
     return result;
@@ -257,8 +276,8 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
     return new Promise((resolve, reject) => {
       try {
         let file = fs.openSync(path);
-        let bufSize = 4096;
-        let readSize = 0;
+        let bufSize = this.FOUR_ZERO_NINE_SIX;
+        let readSize = this.ZERO;
         let buf = new ArrayBuffer(bufSize);
         let readOptions: ReadOptions = {
           offset: readSize,
@@ -266,10 +285,10 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
         };
         let buffers: buffer.Buffer[] = [];
         let readLen = fs.readSync(file.fd, buf, readOptions);
-        while (readLen > 0) {
+        while (readLen > this.ZERO) {
           readSize += readLen;
           readOptions.offset = readSize;
-          buffers.push(buffer.from(buf.slice(0, readLen)))
+          buffers.push(buffer.from(buf.slice(this.ZERO, readLen)))
           readLen = fs.readSync(file.fd, buf, readOptions);
         }
         fs.closeSync(file);
@@ -301,7 +320,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
     return new Promise(async (resolve, reject) => {
       fs.mkdir(path, true, (err: BusinessError) => {
         if (err) {
-          if (err.code == 13900015) {
+          if (err.code == this.ONE_Three_Nine_ZERO_ZERO_ZERO_ONE_FIVE) {
             // 文件夹存在
             resolve();
           } else {
@@ -319,7 +338,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
   writeFile(path: string, contentStr: string): Promise<void> {
     return new Promise((resolve, reject) => {
       // base64 decode 解码
-      let result = buffer.from(contentStr, 'base64');
+      let result = buffer.from(contentStr, this.BASE64);
       // 读写创建 文件不存在则创建文件
       let file = fs.openSync(path, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
       fs.write(file.fd, result.buffer, (err: BusinessError, writeLen: number) => {
@@ -337,7 +356,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
   appendFile(path: string, contentStr: string): Promise<void> {
     return new Promise((resolve, reject) => {
       // base64 decode 解码
-      let result = buffer.from(contentStr, 'base64').toString('utf8');
+      let result = buffer.from(contentStr, this.BASE64).toString(this.UTF8);
       // 读写创建 文件内容追加到末尾
       let file = fs.openSync(path, fs.OpenMode.READ_WRITE | fs.OpenMode.APPEND);
       fs.write(file.fd, result, (err: BusinessError, writeLen: number) => {
@@ -375,7 +394,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
     return new Promise((resolve, reject) => {
       let fromResult: string[] = from.split('/');
       let intoResult: string[] = into.split('/');
-      if (fromResult[fromResult.length-1] === intoResult[intoResult.length-1]) {
+      if (fromResult[fromResult.length-this.ONE] === intoResult[intoResult.length-1]) {
         reject(new Error('The file already exists.'));
         return;
       }
@@ -406,9 +425,9 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
   hash(path: string, algorithm: string): Promise<string> {
     return new Promise((resolve, reject) => {
       let algorithms: HashMap<string, string> = new HashMap();
-      algorithms.set('md5', 'md5');
-      algorithms.set('sha1', 'sha1');
-      algorithms.set('sha256', 'sha256');
+      algorithms.set(this.MD5, this.MD5);
+      algorithms.set(this.SHA1, this.SHA1);
+      algorithms.set(this.SHA256, this.SHA256);
       // algorithm不存在
       if (!algorithms.hasKey(algorithm)) {
         reject('Invalid hash algorithm');
@@ -439,7 +458,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
   // 移动文件
   moveFile(filepath: string, destPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      fs.moveFile(filepath, destPath, 0, (err: BusinessError) => {
+      fs.moveFile(filepath, destPath, this.ZERO, (err: BusinessError) => {
         if (err) {
           reject('move file failed with error message: ' + err.message + ', error code: ' + err.code);
         } else {
@@ -455,13 +474,13 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
       let readTextOption: ReadTextOptions = {
         offset: position,
         length: length,
-        encoding: 'utf-8'
+        encoding: this.UTF_8
       };
       fs.readText(path, readTextOption, (err: BusinessError, str: string) => {
         if (err) {
           reject('readText failed with error message: ' + err.message + ', error code: ' + err.code);
         } else {
-          let result = buffer.from(str, 'utf8').toString('base64');
+          let result = buffer.from(str, this.UTF8).toString(this.BASE64);
           resolve(result);
         }
       });
@@ -471,7 +490,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
   // 文件内容从某位置写
   write(filepath: string, contents: string, position: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      let result = buffer.from(contents, 'base64').toString('utf8');
+      let result = buffer.from(contents, this.BASE64).toString(this.UTF8);
       let file = fs.openSync(filepath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
       let writeOption: WriteOptions = {
         offset: position
@@ -518,12 +537,12 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
   stat(filepath: string): Promise<StatResult> {
     return new Promise((resolve, reject) => {
       let statResult: StatResult = {
-        ctime: -1,
-        mtime: -1,
-        size: -1,
-        mode: -1,
+        ctime: -this.ONE,
+        mtime: -this.ONE,
+        size: -this.ONE,
+        mode: -this.ONE,
         originalFilepath: '',
-        type: -1
+        type: -this.ONE
       };
       // 判断文件是否在
       let res = fs.accessSync(filepath);
@@ -540,7 +559,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
           statResult.size = stat.size;
           statResult.mode = stat.mode;
           statResult.originalFilepath = filepath;
-          statResult.type = stat.isDirectory() ? 1 : 0;
+          statResult.type = stat.isDirectory() ? this.ONE : this.ZERO;
           Logger.info(TAG, 'file statResult: ' + JSON.stringify(statResult));
           resolve(statResult);
         }
