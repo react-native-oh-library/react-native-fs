@@ -493,7 +493,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
       let result = buffer.from(contents, this.BASE64).toString(this.UTF8);
       let file = fs.openSync(filepath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
       let writeOption: WriteOptions = {
-        offset: position
+        offset: fs.statSync(filepath).size
       };
       fs.write(file.fd, result, writeOption, (err: BusinessError, writeLen: number) => {
         if (err) {
