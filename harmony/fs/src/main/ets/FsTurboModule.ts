@@ -566,4 +566,14 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
       });
     })
   }
+
+  // 处理异常警告 没有实际业务
+  addListener(eventName: string): void {
+
+  }
+  
+  // 处理异常警告 没有实际业务
+  removeListeners(count: number): void {
+
+  }
 }

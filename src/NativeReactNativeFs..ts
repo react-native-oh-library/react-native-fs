@@ -59,6 +59,10 @@ export interface Spec extends TurboModule {
 
   existsAssets(filepath: string):Promise<boolean>;
 
+  addListener(eventName: string): void;
+  
+  removeListeners(count: number): void;
+
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('ReactNativeFs');
