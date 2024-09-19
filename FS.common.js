@@ -636,6 +636,13 @@ var RNFS = {
     return RNFSManager.scanFile(path);
   },
 
+  addListener(eventName: string): void {
+
+  },
+  removeListeners(eventName: number): void {
+
+  },
+
   MainBundlePath: (isIOS || isWindows )? RNFSManager.RNFSMainBundlePath:RNFSManager.getConstants().MainBundlePath, 
   CachesDirectoryPath: (isIOS || isWindows )? RNFSManager.RNFSCachesDirectoryPath:RNFSManager.getConstants().FileCachePath,
   ExternalCachesDirectoryPath: RNFSManager.RNFSExternalCachesDirectoryPath,
