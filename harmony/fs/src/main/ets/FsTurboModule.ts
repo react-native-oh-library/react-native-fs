@@ -246,8 +246,8 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
             reject("downloadTask dismiss");
           }
         }).catch((err: BusinessError) => {
-        reject(err);
-      })
+          reject(err);
+        })
     });
   }
 
@@ -394,7 +394,7 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
     return new Promise((resolve, reject) => {
       let fromResult: string[] = from.split('/');
       let intoResult: string[] = into.split('/');
-      if (fromResult[fromResult.length-this.ONE] === intoResult[intoResult.length-1]) {
+      if (fromResult[fromResult.length - this.ONE] === intoResult[intoResult.length - 1]) {
         reject(new Error('The file already exists.'));
         return;
       }
@@ -565,5 +565,15 @@ export class FsTurboModule extends TurboModule implements TM.ReactNativeFs.Spec 
         }
       });
     })
+  }
+
+  // 处理异常警告 没有实际业务
+  addListener(eventName: string): void {
+
+  }
+
+  // 处理异常警告 没有实际业务
+  removeListeners(count: number): void {
+
   }
 }

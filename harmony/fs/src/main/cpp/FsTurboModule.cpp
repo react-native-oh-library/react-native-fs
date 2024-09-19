@@ -129,6 +129,16 @@ static jsi::Value __hostFunction_FsTurboModule_existsAssets(jsi::Runtime &rt, re
     return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "existsAssets", args, count);
 }
 
+static jsi::Value __hostFunction_FsTurboModule_addListener(jsi::Runtime &rt, react::TurboModule &turboModule,
+                                                        const jsi::Value *args, size_t count) {
+    return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "addListener", args, count);
+}
+
+static jsi::Value __hostFunction_FsTurboModule_removeListeners(jsi::Runtime &rt, react::TurboModule &turboModule,
+                                                        const jsi::Value *args, size_t count) {
+    return static_cast<ArkTSTurboModule &>(turboModule).callAsync(rt, "removeListeners", args, count);
+}
+
 FsTurboModule::FsTurboModule(const ArkTSTurboModule::Context ctx, const std::string name)
     : ArkTSTurboModule(ctx, name) {
     methodMap_["getConstants"] = MethodMetadata{0, __hostFunction_FsTurboModule_getConstants};
@@ -149,4 +159,6 @@ FsTurboModule::FsTurboModule(const ArkTSTurboModule::Context ctx, const std::str
     methodMap_["downloadFile"] = MethodMetadata{1, __hostFunction_FsTurboModule_downloadFile};
     methodMap_["readDir"] = MethodMetadata{1, __hostFunction_FsTurboModule_readDir};
     methodMap_["existsAssets"] = MethodMetadata{1, __hostFunction_FsTurboModule_existsAssets};
+    methodMap_["addListener"] = MethodMetadata{1, __hostFunction_FsTurboModule_addListener};
+    methodMap_["removeListeners"] = MethodMetadata{1, __hostFunction_FsTurboModule_removeListeners};
 }
