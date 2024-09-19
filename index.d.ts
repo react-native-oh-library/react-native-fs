@@ -286,6 +286,10 @@ export function touch(
 	modifyCreationTime?: boolean
 ): Promise<void>
 
+export function addListener(eventName: string): void
+
+export function removeListeners(count: number): void
+
 export const MainBundlePath: string
 export const CachesDirectoryPath: string
 export const ExternalCachesDirectoryPath: string
