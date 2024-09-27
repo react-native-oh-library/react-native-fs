@@ -1,6 +1,6 @@
 {
   "name": "@react-native-oh-tpl/react-native-fs",
-  "version": "2.20.0-nc.0.1.13",
+  "version": "2.20.0-nc.0.1.14",
   "description": "Native filesystem access for react-native",
   "main": "FS.common.js",
   "typings": "index.d.ts",
